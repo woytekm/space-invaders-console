@@ -9,7 +9,10 @@ The game can still be played using mentioned keys, but not so comfortably as wit
 
 Key remapping can be done by editing G_keymap variable.
 
-Only tested on OS X at this moment. 
+Only tested on OS X at this moment.
+
+(it works much faster than on the gif below)
+
 
 ![](https://github.com/woytekm/space-invaders-console/blob/main/Game.gif)
 
