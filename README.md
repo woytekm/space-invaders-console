@@ -1,6 +1,6 @@
 I wrote this game during Python course in spare time between execrices.
 
-It is written in Python 3.6 and uses curses library to display animated semigraphics in shell terminal/cmd window. Pynput library is used for keyboard monitoring.
+It is written using Python 3.6 and uses curses library to display animated semigraphics in shell terminal/cmd window. Pynput library is used for keyboard monitoring.
 It will work only on console sessions, won't work properly through SSH session (pynput keyboard monitoring won't work over SSH). 
 
 On more recent OS X versions i have noticed that pynput has some problems with key monitoring, and only keys which work are: CTRL, Option, Command and Shift. 
