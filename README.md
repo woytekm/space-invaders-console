@@ -11,5 +11,5 @@ Key remapping can be done by editing G_keymap variable.
 
 Only tested on OS X at this moment. 
 
-![](https://github.com/woytekm/space-invaders-console/Game.gif)
+![](https://github.com/woytekm/space-invaders-console/blob/main/Game.gif)
 
