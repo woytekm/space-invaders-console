@@ -52,12 +52,25 @@ def clear_rect(x1,x2,y1,y2,screen):
    for j in range(x1-1,x2+1):
       screen[i][j] = ' '
 
+def clear_color_map(x1,x2,y1,y2,screen):
+ for i in range(y1,y2):
+   for j in range(x1-1,x2+1):
+      screen[i][j] = 0
+
 def draw_resource(resource,x1,y1,x_rect,y_rect,screen):
  idx = 0
  for i in range(y1,y1+y_rect):
   for j in range(x1,x1+x_rect):
     screen[i][j] = resource[idx]
     idx += 1
+
+def set_resource_color(color_map,x1,y1,x_rect,y_rect,screen):
+ idx = 0
+ for i in range(y1,y1+y_rect):
+  for j in range(x1,x1+x_rect):
+    screen[i][j] = color_map[idx]
+    idx += 1
+
 
 # objects
 
@@ -195,6 +208,7 @@ class HeroShip(WorldItem):
      self.object_rect_y = 3
      self.shot_delay = 8
      self.shot_delay_ctr = 0
+     self.shot_fired = False
  
      self.resources = {}
 
@@ -275,7 +289,11 @@ class HeroShip(WorldItem):
          self.old_x_pos = self.x_pos
          self.x_pos += 1 
      if pressed_keys[G_keymap["KEY_FIRE"]] == True:    # space bar / fire
-       other_items.append(HeroMissile(self.x_pos+2,self.y_pos-1,self.bound_x,self.bound_y,False))
+       if not self.shot_fired:
+         other_items.append(HeroMissile(self.x_pos+2,self.y_pos-1,self.bound_x,self.bound_y,False))
+         self.shot_fired = True
+     else:
+       self.shot_fired = False
      
      for other_item in other_items:
        if other_item.uuid != self.uuid:
@@ -455,6 +473,24 @@ class HeroMissile(WorldItem):
      self.object_type = "HeroMissile"
      self.event = "normal"
      self.color_pair = 2
+     self.object_rect_x = 3
+     self.object_rect_y = 3
+
+     self.resources = {}
+     self.color_maps = {}
+
+     self.resources['explode-1'] = ['\\',' ','/',' ','*',' ','/',' ','\\']
+     self.resources['explode-2'] = ['#','#','#','#','*','#','#','#','#']
+     self.resources['explode-3'] = ['*','*','*','*','#','*','*','*','*']
+     self.resources['explode-4'] = ['*',' ','*',' ','#',' ','*',' ','*']
+     self.resources['explode-5'] = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
+
+     self.color_maps['explode-1'] = [4,4,4,4,4,4,4,4,4]
+     self.color_maps['explode-2'] = [3,4,3,3,4,3,3,4,3]
+     self.color_maps['explode-3'] = [3,3,3,4,4,4,3,3,3]
+     self.color_maps['explode-4'] = [3,3,3,3,3,3,3,3,3]
+     self.color_maps['explode-5'] = [0,0,0,0,0,0,0,0,0]
+
 
   def item_update_screen(self,screen_arr,color_map):
      if self.event == "normal":
@@ -466,51 +502,20 @@ class HeroMissile(WorldItem):
        screen_arr[self.y_pos][self.x_pos] = ' '
        color_map[self.y_pos][self.x_pos] = 0
      elif self.event == "explode-1":
-       screen_arr[self.y_pos][self.x_pos] = '*'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '\\'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '\\'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '/'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '/'
+       set_resource_color(self.color_maps['explode-1'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-1'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-2":
-       screen_arr[self.y_pos][self.x_pos] = '*'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '#'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '#'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '#'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '#'
-       screen_arr[self.y_pos][self.x_pos-1] = '#'
-       screen_arr[self.y_pos][self.x_pos+1] = '#'
-       screen_arr[self.y_pos-1][self.x_pos] = '#'
-       screen_arr[self.y_pos+1][self.x_pos] = '#'
+       set_resource_color(self.color_maps['explode-2'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-2'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-3":
-       screen_arr[self.y_pos][self.x_pos] = '#'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos][self.x_pos-1] = '*'
-       screen_arr[self.y_pos][self.x_pos+1] = '*'
-       screen_arr[self.y_pos-1][self.x_pos] = '*'
-       screen_arr[self.y_pos+1][self.x_pos] = '*'
+       set_resource_color(self.color_maps['explode-3'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-3'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-4":
-       screen_arr[self.y_pos][self.x_pos] = '#'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos][self.x_pos-1] = ' '
-       screen_arr[self.y_pos][self.x_pos+1] = ' '
-       screen_arr[self.y_pos-1][self.x_pos] = ' '
-       screen_arr[self.y_pos+1][self.x_pos] = ' '
+       set_resource_color(self.color_maps['explode-4'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-4'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-5":
-       screen_arr[self.y_pos][self.x_pos] = ' '
-       screen_arr[self.y_pos-1][self.x_pos-1] = ' '
-       screen_arr[self.y_pos+1][self.x_pos+1] = ' '
-       screen_arr[self.y_pos-1][self.x_pos+1] = ' '
-       screen_arr[self.y_pos+1][self.x_pos-1] = ' '
-       screen_arr[self.y_pos][self.x_pos-1] = ' '
-       screen_arr[self.y_pos][self.x_pos+1] = ' '
-       screen_arr[self.y_pos-1][self.x_pos] = ' '
-       screen_arr[self.y_pos+1][self.x_pos] = ' '
+       set_resource_color(self.color_maps['explode-5'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-5'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
 
   def item_step(self,other_items,key_event,phase_timer):
 
@@ -554,6 +559,25 @@ class EnemyMissile(WorldItem):
      self.object_type = "EnemyMissile"
      self.event = "normal"
 
+     self.object_rect_x = 3
+     self.object_rect_y = 3
+
+     self.resources = {}
+     self.color_maps = {}
+
+     self.resources['explode-1'] = ['\\',' ','/',' ','*',' ','/',' ','\\']
+     self.resources['explode-2'] = ['#','#','#','#','*','#','#','#','#']
+     self.resources['explode-3'] = ['*','*','*','*','#','*','*','*','*']
+     self.resources['explode-4'] = ['*',' ','*',' ','#',' ','*',' ','*']
+     self.resources['explode-5'] = [' ',' ',' ',' ',' ',' ',' ',' ',' ']
+
+     self.color_maps['explode-1'] = [4,4,4,4,4,4,4,4,4]
+     self.color_maps['explode-2'] = [3,4,3,3,4,3,3,4,3]
+     self.color_maps['explode-3'] = [3,3,3,4,4,4,3,3,3]
+     self.color_maps['explode-4'] = [3,3,3,3,3,3,3,3,3]
+     self.color_maps['explode-5'] = [0,0,0,0,0,0,0,0,0]
+
+
   def item_update_screen(self,screen_arr,color_map):
      if self.event == "normal":
        screen_arr[self.old_y_pos][self.old_x_pos] = ' '
@@ -561,51 +585,20 @@ class EnemyMissile(WorldItem):
      elif self.event == "died":
        screen_arr[self.y_pos][self.x_pos] = ' '
      elif self.event == "explode-1":
-       screen_arr[self.y_pos][self.x_pos] = '*'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '\\'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '\\'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '/'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '/'
+       set_resource_color(self.color_maps['explode-1'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-1'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-2":
-       screen_arr[self.y_pos][self.x_pos] = '*'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '#'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '#'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '#'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '#'
-       screen_arr[self.y_pos][self.x_pos-1] = '#'
-       screen_arr[self.y_pos][self.x_pos+1] = '#'
-       screen_arr[self.y_pos-1][self.x_pos] = '#'
-       screen_arr[self.y_pos+1][self.x_pos] = '#'
+       set_resource_color(self.color_maps['explode-2'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-2'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-3":
-       screen_arr[self.y_pos][self.x_pos] = '#'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos][self.x_pos-1] = '*'
-       screen_arr[self.y_pos][self.x_pos+1] = '*'
-       screen_arr[self.y_pos-1][self.x_pos] = '*'
-       screen_arr[self.y_pos+1][self.x_pos] = '*'
+       set_resource_color(self.color_maps['explode-3'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-3'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-4":
-       screen_arr[self.y_pos][self.x_pos] = '#'
-       screen_arr[self.y_pos-1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos-1][self.x_pos+1] = '*'
-       screen_arr[self.y_pos+1][self.x_pos-1] = '*'
-       screen_arr[self.y_pos][self.x_pos-1] = ' '
-       screen_arr[self.y_pos][self.x_pos+1] = ' '
-       screen_arr[self.y_pos-1][self.x_pos] = ' '
-       screen_arr[self.y_pos+1][self.x_pos] = ' '
+       set_resource_color(self.color_maps['explode-4'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-4'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
      elif self.event == "explode-5":
-       screen_arr[self.y_pos][self.x_pos] = ' '
-       screen_arr[self.y_pos-1][self.x_pos-1] = ' '
-       screen_arr[self.y_pos+1][self.x_pos+1] = ' '
-       screen_arr[self.y_pos-1][self.x_pos+1] = ' '
-       screen_arr[self.y_pos+1][self.x_pos-1] = ' '
-       screen_arr[self.y_pos][self.x_pos-1] = ' '
-       screen_arr[self.y_pos][self.x_pos+1] = ' '
-       screen_arr[self.y_pos-1][self.x_pos] = ' '
-       screen_arr[self.y_pos+1][self.x_pos] = ' '
+       set_resource_color(self.color_maps['explode-5'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,color_map)
+       draw_resource(self.resources['explode-5'],self.x_pos-1,self.y_pos-1,self.object_rect_x,self.object_rect_y,screen_arr)
 
   def item_step(self,other_items,key_event,phase_timer):
 
@@ -684,6 +677,10 @@ def main(stdscr):
   curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
   # color pair 2: HeroMissile
   curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
+  # color pair 3: red (explosions)
+  curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+  # color pair xi42:  yellow (explosions)
+  curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
   stdscr.nodelay(1)
 
